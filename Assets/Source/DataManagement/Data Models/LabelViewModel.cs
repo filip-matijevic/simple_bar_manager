@@ -7,7 +7,6 @@ public class LabelViewModel : MonoBehaviour{
 
     void Awake(){
         LoadLabels();
-        AddLabel("a label", Random.ColorHSV());
     }
 
     private void LoadLabels(){
@@ -40,6 +39,11 @@ public class LabelViewModel : MonoBehaviour{
             SaveToPlayerPrefs();
         }
     }
+
+    public void RemoveLabel(string name){
+        Labels.RemoveAll(label => label.Name == name);
+        SaveToPlayerPrefs();
+    }
 }
 
 
@@ -53,14 +57,24 @@ public class Label{
     }
 
     private string ColorToHex(Color color){
-        return ColorUtility.ToHtmlStringRGBA(color);
+        Color32 color32= color;
+        return $"{color32.r:X2}{color32.g:X2}{color32.b:X2}{color32.a:X2}";
     }
 
     public Color GetColor(){
-        if (ColorUtility.TryParseHtmlString(ColorHex, out Color color)){
-            return color;
-        }
-        return Color.magenta;
+        Debug.Log(ColorHex);
+
+        if (ColorHex.Length != 8){
+            return Color.magenta;
+        }        
+        byte r = byte.Parse(ColorHex.Substring(0, 2), System.Globalization.NumberStyles.HexNumber);
+        byte g = byte.Parse(ColorHex.Substring(2, 2), System.Globalization.NumberStyles.HexNumber);
+        byte b = byte.Parse(ColorHex.Substring(4, 2), System.Globalization.NumberStyles.HexNumber);
+        byte a = byte.Parse(ColorHex.Substring(6, 2), System.Globalization.NumberStyles.HexNumber);
+
+        Debug.Log(r + " " + g + " " + b + " " + a);
+
+        return new Color32(r, g, b, a);
     }
 
     public string ToDebugString(){
