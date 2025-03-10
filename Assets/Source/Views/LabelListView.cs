@@ -22,6 +22,7 @@ public class LabelListView : MonoBehaviour
         viewModel = new LabelListViewModel();
         viewModel.OnLabelRefresh += OnLabelViewModelChange;
         dropTableButton.onClick.AddListener(viewModel.DropLabelTable);
+        RebuildLabelList();
     }
 
     private void OnLabelViewModelChange()

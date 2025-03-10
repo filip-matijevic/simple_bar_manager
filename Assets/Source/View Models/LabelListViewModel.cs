@@ -32,6 +32,7 @@ public class LabelListViewModel
 
     public void DropLabelTable(){
         SQLiteManager.Labels.DropLabelTable();
+        Labels.Clear();
         OnLabelRefresh?.Invoke();
 
     }
