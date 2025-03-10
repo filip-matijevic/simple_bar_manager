@@ -1,9 +1,10 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class LabelListView : MonoBehaviour
 {
-    [SerializeField]
-    private LabelViewModel viewModel;
     [SerializeField]
     private LabelView labelViewPrefab;
 
@@ -11,26 +12,32 @@ public class LabelListView : MonoBehaviour
     [SerializeField]
     private Transform labelContainer;
 
+    private LabelListViewModel viewModel;
+
+    [SerializeField]
+    private Button dropTableButton;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        DisplayLabels();
+        viewModel = new LabelListViewModel();
+        viewModel.OnLabelRefresh += OnLabelViewModelChange;
+        dropTableButton.onClick.AddListener(viewModel.DropLabelTable);
     }
 
-    // Update is called once per frame
-    void Update()
+    private void OnLabelViewModelChange()
     {
-        
+        Debug.Log("Labels got changed!");
+        RebuildLabelList();
     }
 
-    private void DisplayLabels(){
+    void RebuildLabelList(){
         foreach(Transform child in labelContainer){
             Destroy(child.gameObject);
         }
 
-        foreach(Label label in viewModel.Labels){
-            LabelView labelInstance = Instantiate(labelViewPrefab, labelContainer);
-            labelInstance.Init(label.Name, label.GetColor());
+        foreach(LabelViewModel loadedLabel in viewModel.Labels){
+            LabelView view = Instantiate(labelViewPrefab, labelContainer);
+            view.Init(loadedLabel.Label, loadedLabel.Color);
         }
     }
 }

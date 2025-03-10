@@ -1,18 +1,41 @@
 using System.IO;
 using UnityEngine;
 using Mono.Data.Sqlite;
+using System.Collections.Generic;
+using System.Data;
 
 public class SQLiteManager : MonoBehaviour
 {
-    private string dbPath;
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        dbPath = Path.Combine(Application.persistentDataPath, "Database.db");
-        CreateDatabase();
-        InsertLabel(new SQLabel("Test", "FF00FFFF"));
-        GetAllLabels();
+    public static string dbPath;
+    private static IDbConnection dbConnection;
 
+    public static LabelTable Labels;
+    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    void Awake()
+    {
+        dbPath = "URI=file:" + Path.Combine(Application.persistentDataPath, "Database.db");
+        OpenDatabase();
+
+        Labels = new LabelTable(dbConnection);
+    }
+
+    void OnApplicationQuit()
+    {
+        CloseDatabase();   
+    }
+
+    private void OpenDatabase(){
+        if (dbConnection == null){
+            dbConnection = new SqliteConnection(dbPath);
+            dbConnection.Open();
+        }
+    }
+
+    private void CloseDatabase(){
+        if (dbConnection != null){
+            dbConnection.Close();
+            dbConnection = null;
+        }
     }
 
     private void CreateDatabase()
@@ -32,70 +55,4 @@ public class SQLiteManager : MonoBehaviour
             connection.Close();
         }
     }
-
-    // Update is called once per frame
-    public void InsertLabel(SQLabel label)
-    {
-        using (var connection = new SqliteConnection("URI=file:" + dbPath))
-        {
-            connection.Open();
-            using (var command = connection.CreateCommand())
-            {
-                command.CommandText = @"INSERT INTO Labels (name, hexColor) VALUES (@name, @hexColor);";
-                command.Parameters.AddWithValue("@name", label.Name);
-                command.Parameters.AddWithValue("@hexColor", label.HexColor);
-                command.ExecuteNonQuery();
-            }
-        }
-    }
-
-    private void GetAllLabels()
-    {
-        using (var connection = new SqliteConnection("URI=file:" + dbPath))
-        {
-            connection.Open();
-            using (var command = connection.CreateCommand())
-            {
-                command.CommandText = "SELECT * FROM Labels;";
-                using (var reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        SQLabel label = new SQLabel(
-                            reader.GetInt32(0),  // Id (auto-generated)
-                            reader.GetString(1), // Name
-                            reader.GetString(2)  // HexCode
-                        );
-                        Debug.Log(label);
-                    }
-                }
-            }
-            connection.Close();
-        }
-    }
 }
-
-    public class SQLabel
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public string HexColor { get; set; }
-
-        public SQLabel(int id, string name, string hexColor)
-        {
-            Id = id;
-            Name = name;
-            HexColor = hexColor;
-        }
-        public SQLabel(string name, string hexColor)
-        {
-            Id = -1;
-            Name = name;
-            HexColor = hexColor;
-        }
-
-        public override string ToString()
-        {
-            return $"Label: [Id={Id}, Name={Name}, HexCode={HexColor}]";
-        }
-    }
