@@ -1,12 +1,10 @@
 using UnityEngine;
 
-public class DataAccess : MonoBehaviour
+public class DataManager : MonoBehaviour
 {
-    [SerializeField]
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        
     }
 
     // Update is called once per frame
